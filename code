@@ -1,0 +1,92 @@
+CMD:tunload(playerid, params[])
+{
+    if(pInfo[playerid][pJob] != 2) return SendClientMessage(playerid, 0xC2C2C2FF, !"Вам недоступна данная команда");
+    if(PRICEP[playerid] == 0) return SendClientMessage(playerid, 0xC2C2C2FF, !"Вы еще не купили прицеп");
+    if(GetPVarInt(playerid, "anti_flood_dalnoboy") > gettime())
+	{
+	    new nsa[80];
+	    format(nsa, sizeof nsa, "Вы сможете продать груз только через %d секунд", GetPVarInt(playerid, "anti_flood_dalnoboy")-gettime());
+		return SendClientMessage(playerid, 0xC2C2C2FF,nsa);
+	}
+    new vehh = GetPlayerVehicleID(playerid);
+    if(DalnoCar[vehh] != playerid) return SendClientMessage(playerid, 0xC2C2C2FF, !"Вы должны находиться в арендованой Вами грузовой машине");
+    new i = -1;
+	if(IsPlayerInRangeOfPoint(playerid, 15.0, 2399.0889,-2261.7791,13.3828))
+	{
+	    new Float:x,Float:y,Float:z;
+        GetVehiclePos(PRICEP[playerid],x,y,z);
+        if(!IsPlayerInRangeOfPoint(playerid,20,x,y,z)) return SendClientMessage(playerid, 0xC2C2C2FF, !"Вы не привезли купленный Вами груз");
+		DestroyVehicle(PRICEP[playerid]);
+		PRICEP[playerid] = 0;
+	    new Vezu_Tonn = GetPVarInt(playerid, "Vezu_Tonn");
+	    new Type_Gruz = GetPVarInt(playerid, "Type_Gruz");
+	    DeletePVar(playerid, "Vezu_Tonn");
+	    DeletePVar(playerid, "Type_Gruz");
+		switch(Type_Gruz)
+		{
+			case 1: i = 0;
+			case 2: i = 1;
+			case 3: i = 2;
+		}
+	    GiveMoney(playerid, Vezu_Tonn*dSkladProd[i], "Работая дальнобойщиком, продал груз на: ");
+	    pInfo[playerid][pDalnoExp] += Vezu_Tonn*500;
+	    if(pInfo[playerid][pDalnoLVL] < 20)
+		{
+		    if(pInfo[playerid][pDalnoLVL]*14000 < pInfo[playerid][pDalnoExp])
+		    {
+                pInfo[playerid][pDalnoLVL]++;
+                pInfo[playerid][pDalnoExp] = 0;
+                new nsa[144];
+                format(nsa, sizeof nsa, "Поздравляем Вас с получением нового уровня дальнобойщика! Теперь Вы можете возить {FFFFFF}%d тонн.", pInfo[playerid][pDalnoLVL]+5);
+                SendClientMessage(playerid, 0xF2FF00AA, nsa);
+			}
+	    }
+	}
+	else if(IsPlayerInRangeOfPoint(playerid, 15.0, -1732.4110,140.8556,3.5547))//SF (dSkladProd iz LV
+	{
+	    new Float:x,Float:y,Float:z;
+        GetVehiclePos(PRICEP[playerid],x,y,z);
+        if(!IsPlayerInRangeOfPoint(playerid,20,x,y,z)) return SendClientMessage(playerid, 0xC2C2C2FF, !"Вы не привезли кпуленный Вами груз");
+		DestroyVehicle(PRICEP[playerid]);
+		PRICEP[playerid] = 0;
+	    new Vezu_Tonn = GetPVarInt(playerid, "Vezu_Tonn");
+	    new Type_Gruz = GetPVarInt(playerid, "Type_Gruz");
+	    DeletePVar(playerid, "Vezu_Tonn");
+	    DeletePVar(playerid, "Type_Gruz");
+		switch(Type_Gruz)
+		{
+			case 1: i = 3;
+			case 2: i = 4;
+			case 3: i = 5;
+		}
+	    GiveMoney(playerid, Vezu_Tonn*dSkladProd[i], "Работая дальнобойщиком, продал груз на: ");
+	    pInfo[playerid][pDalnoExp] += Vezu_Tonn*500;
+	    if(pInfo[playerid][pDalnoLVL] < 20)
+		{
+		    if(pInfo[playerid][pDalnoLVL]*14000 < pInfo[playerid][pDalnoExp])
+		    {
+                pInfo[playerid][pDalnoLVL]++;
+                pInfo[playerid][pDalnoExp] = 0;
+                new nsa[144];
+                format(nsa, sizeof nsa, "Поздравляем Вас с получением нового уровня дальнобойщика! Теперь Вы можете возить {FFFFFF}%d тонн.", pInfo[playerid][pDalnoLVL]+5);
+                SendClientMessage(playerid, 0xF2FF00AA, nsa);
+			}
+	    }
+	}
+	if(i == -1) return SendClientMessage(playerid, 0xC2C2C2FF, !"Вы не в порту");
+	if(dSkladProd[i] > 120)
+	{
+		dSkladProd[i] -= 10;
+		switch(i)
+		{
+			case 0: dSkladProd[3] += 10;
+			case 1: dSkladProd[4] += 10;
+			case 2: dSkladProd[5] += 10;
+			case 3: dSkladProd[0] += 10;
+			case 4: dSkladProd[1] += 10;
+			case 5: dSkladProd[2] += 10;
+		}
+	}
+	UpdateDalnoboy();
+	return 1;
+}
